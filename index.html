@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>生日祝福產生器</title>
+<script src="https://js.puter.com/v2/"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500&family=Noto+Sans+TC:wght@300;400;500&display=swap');
+  :root {
+    --cream:#F5F0E8; --ink:#2C2416; --ink-light:#6B5E4A; --ink-faint:#A8997E;
+    --gold:#C4963A; --gold-light:#E8C97A; --gold-pale:#F5EDD0; --border:#D9CEB8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--cream);color:var(--ink);font-family:'Noto Sans TC',sans-serif;font-weight:300;min-height:100vh;padding:48px 24px;}
+  .page{max-width:860px;margin:0 auto;}
+  .header{text-align:center;margin-bottom:52px;}
+  .header-eyebrow{font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;}
+  .header h1{font-family:'Noto Serif TC',serif;font-size:26px;font-weight:300;letter-spacing:.08em;}
+  .header-line{width:40px;height:1px;background:var(--gold);margin:18px auto 0;}
+  .layout{display:flex;gap:32px;align-items:flex-start;}
+  .sidebar{width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:20px;}
+  .panel{background:white;border:1px solid var(--border);padding:20px;display:flex;flex-direction:column;gap:14px;}
+  .panel-title{font-size:11px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-size:12px;color:var(--ink-light);letter-spacing:.04em;}
+  .field input,.field textarea{background:var(--cream);border:1px solid var(--border);color:var(--ink);font-family:'Noto Sans TC',sans-serif;font-weight:300;font-size:13px;padding:7px 10px;outline:none;width:100%;border-radius:0;transition:border-color .2s;}
+  .field input:focus,.field textarea:focus{border-color:var(--gold);}
+  .field textarea{height:64px;resize:none;}
+  .free-badge{font-size:11px;color:var(--ink-faint);line-height:1.6;padding:8px 10px;background:var(--gold-pale);border:1px solid var(--border);text-align:center;}
+  .free-badge strong{color:var(--gold);}
+  .tone-row{display:flex;gap:6px;}
+  .tone-btn{flex:1;font-size:12px;font-family:'Noto Sans TC',sans-serif;font-weight:300;padding:6px 4px;border:1px solid var(--border);background:var(--cream);color:var(--ink-light);cursor:pointer;border-radius:0;transition:all .15s;}
+  .tone-btn.on{background:var(--gold-pale);border-color:var(--gold);color:var(--ink);}
+  .gen-btn{width:100%;padding:12px;background:var(--ink);color:var(--cream);border:none;font-family:'Noto Serif TC',serif;font-size:14px;font-weight:300;letter-spacing:.12em;cursor:pointer;transition:background .2s;border-radius:0;}
+  .gen-btn:hover{background:var(--gold);color:var(--ink);}
+  .gen-btn:disabled{background:var(--ink-faint);cursor:not-allowed;color:var(--cream);}
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px;}
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 24px;border:1px dashed var(--border);color:var(--ink-faint);gap:12px;}
+  .empty-state .ei{font-size:32px;opacity:.6;}
+  .empty-state p{font-size:13px;letter-spacing:.06em;}
+  .wish-card{background:white;border:1px solid var(--border);padding:20px 22px;display:flex;flex-direction:column;gap:12px;transition:border-color .2s;}
+  .wish-card.locked{border-color:var(--gold);background:#FFFDF7;}
+  .card-top{display:flex;align-items:center;justify-content:space-between;}
+  .card-num{font-size:11px;letter-spacing:.14em;color:var(--ink-faint);}
+  .card-actions{display:flex;gap:8px;align-items:center;}
+  .locked-tag{font-size:11px;color:var(--gold);letter-spacing:.08em;padding:3px 8px;border:1px solid var(--gold-light);background:var(--gold-pale);}
+  .action-btn{font-size:12px;font-family:'Noto Sans TC',sans-serif;font-weight:300;padding:4px 10px;border:1px solid var(--border);background:transparent;color:var(--ink-light);cursor:pointer;letter-spacing:.04em;transition:all .15s;border-radius:0;}
+  .action-btn:hover{border-color:var(--ink-light);color:var(--ink);}
+  .action-btn.lock-on{border-color:var(--gold);color:var(--gold);}
+  .action-btn.copied{border-color:#7A9E7E;color:#4A7A4E;background:#F0F5F0;}
+  .card-text{font-family:'Noto Serif TC',serif;font-size:15px;font-weight:300;color:var(--ink);line-height:1.95;white-space:pre-wrap;letter-spacing:.04em;}
+  .divider{width:100%;height:1px;background:var(--border);}
+  .loading-card{background:white;border:1px solid var(--border);padding:20px 22px;color:var(--ink-faint);font-size:13px;letter-spacing:.06em;animation:pulse 1.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .error-msg{padding:20px 22px;color:#9B4A3A;font-size:13px;border:1px solid #E8C4BC;background:#FDF5F3;line-height:1.7;white-space:pre-wrap;}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="header-eyebrow">Birthday</div>
+    <h1>生日祝福產生器</h1>
+    <div class="header-line"></div>
+  </div>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="free-badge"><strong>✦ 完全免費</strong><br>不需要 API Key<br>開啟即可使用</div>
+      <div class="panel">
+        <div class="panel-title">背景資訊（選填）</div>
+        <div class="field"><label>與對方的關係</label><input type="text" id="rel" placeholder="同事、高中同學…"/></div>
+        <div class="field"><label>個性或興趣</label><input type="text" id="trait" placeholder="愛喝咖啡、很愛運動…"/></div>
+        <div class="field"><label>幾歲生日</label><input type="text" id="age" placeholder="30、不確定…"/></div>
+        <div class="field"><label>其他備註</label><textarea id="note" placeholder="今年換工作、剛生小孩…"></textarea></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">語氣</div>
+        <div class="tone-row">
+          <button class="tone-btn on" data-tone="輕鬆" onclick="setTone(this)">輕鬆</button>
+          <button class="tone-btn" data-tone="溫馨" onclick="setTone(this)">溫馨</button>
+          <button class="tone-btn" data-tone="搞笑" onclick="setTone(this)">搞笑</button>
+        </div>
+      </div>
+      <button class="gen-btn" id="genbtn" onclick="generate()">產 生 五 個 版 本</button>
+    </div>
+    <div class="main" id="main">
+      <div class="empty-state"><div class="ei">🎂</div><p>填好設定後按「產生五個版本」</p></div>
+    </div>
+  </div>
+</div>
+<script>
+var currentTone='輕鬆',lockedCards={},results=[],isLoading=false;
+
+function setTone(btn){
+  document.querySelectorAll('.tone-btn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  currentTone=btn.getAttribute('data-tone');
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function buildPrompt(){
+  var rel=document.getElementById('rel').value.trim();
+  var trait=document.getElementById('trait').value.trim();
+  var age=document.getElementById('age').value.trim();
+  var note=document.getElementById('note').value.trim();
+  var ctx='';
+  if(rel) ctx+='與對方關係：'+rel+'\n';
+  if(trait) ctx+='對方個性或興趣：'+trait+'\n';
+  if(age) ctx+='幾歲生日：'+age+'\n';
+  if(note) ctx+='其他備註：'+note+'\n';
+  var hasCtx=ctx.trim().length>0;
+  return '你是一個幫人寫生日祝福的助手。請產生5則生日祝福訊息。\n\n語氣要求：'+currentTone+'\n注意事項：\n- 不要太制式、不要像範本套用\n- 不要裝熟，保持一點點禮貌距離，像是傳給不太熟的朋友那種感覺\n- 不要用「願你」「祝你」這種起頭，可以換個方式進入\n- 標點符號全部用空格代替（不要用逗號、句號、驚嘆號等任何標點），可以適時加入合適的emoji\n- 每則大約2-4行，長短自然不一\n- 5則風格要明顯不同\n'+(hasCtx?'\n對象背景資訊：\n'+ctx+'\n請根據以上背景，讓祝福內容更貼合這個人':'')+'\n\n請直接回傳JSON格式，不要加任何說明文字或markdown符號：\n{"wishes":["第一則","第二則","第三則","第四則","第五則"]}';
+}
+
+async function generate(){
+  if(isLoading) return;
+  isLoading=true;
+  var btn=document.getElementById('genbtn');
+  btn.disabled=true; btn.textContent='生 成 中 …';
+
+  var main=document.getElementById('main');
+  var lockedTexts={};
+  results.forEach(function(r,i){if(lockedCards[i]) lockedTexts[i]=r;});
+
+  var html='';
+  for(var i=0;i<5;i++){
+    if(lockedTexts[i]!==undefined) html+=makeCard(i,lockedTexts[i],true);
+    else html+='<div class="loading-card">正在生成版本 '+(i+1)+' …</div>';
+  }
+  main.innerHTML=html;
+
+  try{
+    var response = await puter.ai.chat(buildPrompt(), {model:'openrouter:meta-llama/llama-4-maverick:free'});
+    var text = typeof response==='string' ? response : (response.message?.content || response.content || JSON.stringify(response));
+    var clean=text.replace(/```json|```/g,'').trim();
+    // find JSON object
+    var match=clean.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('回傳格式錯誤：'+clean.substring(0,200));
+    var parsed=JSON.parse(match[0]);
+    results=parsed.wishes;
+    lockedCards={};
+    Object.keys(lockedTexts).forEach(function(i){results[i]=lockedTexts[i];lockedCards[i]=true;});
+    renderCards();
+  }catch(e){
+    main.innerHTML='<div class="error-msg">出了點問題\n'+esc(e.message||'請再試一次')+'</div>';
+  }
+
+  isLoading=false; btn.disabled=false; btn.textContent='產 生 五 個 版 本';
+}
+
+function makeCard(i,text,locked){
+  return '<div class="wish-card'+(locked?' locked':'')+'">'+
+    '<div class="card-top">'+
+      '<span class="card-num">NO. 0'+(i+1)+'</span>'+
+      '<div class="card-actions">'+
+        (locked?'<span class="locked-tag">已鎖定</span>':'')+
+        '<button class="action-btn'+(locked?' lock-on':'')+'" onclick="toggleLock('+i+')">'+(locked?'解鎖':'鎖定')+'</button>'+
+        '<button class="action-btn" id="cp'+i+'" onclick="copyText('+i+')">複製</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="divider"></div>'+
+    '<div class="card-text">'+esc(text)+'</div>'+
+  '</div>';
+}
+
+function renderCards(){
+  document.getElementById('main').innerHTML=results.map(function(text,i){
+    return makeCard(i,text,!!lockedCards[i]);
+  }).join('');
+}
+
+function toggleLock(i){
+  if(lockedCards[i]) delete lockedCards[i]; else lockedCards[i]=true;
+  renderCards();
+}
+
+async function copyText(i){
+  try{
+    await navigator.clipboard.writeText(results[i]);
+    var btn=document.getElementById('cp'+i);
+    btn.classList.add('copied'); btn.textContent='已複製';
+    setTimeout(function(){btn.classList.remove('copied');btn.textContent='複製';},1800);
+  }catch(e){}
+}
+</script>
+</body>
+</html>
