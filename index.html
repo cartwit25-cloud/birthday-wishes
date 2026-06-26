@@ -130,7 +130,7 @@ async function generate(){
   main.innerHTML=html;
 
   try{
-    var response = await puter.ai.chat(buildPrompt(), {model:'openrouter:meta-llama/llama-4-maverick:free'});
+    var response = await puter.ai.chat(buildPrompt(), {model:'meta-llama/llama-3.3-70b-instruct:free'});
     var text = typeof response==='string' ? response : (response.message?.content || response.content || JSON.stringify(response));
     var clean=text.replace(/```json|```/g,'').trim();
     // find JSON object
