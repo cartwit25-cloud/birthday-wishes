@@ -27,8 +27,8 @@
   .field input,.field textarea{background:var(--cream);border:1px solid var(--border);color:var(--ink);font-family:'Noto Sans TC',sans-serif;font-weight:300;font-size:13px;padding:7px 10px;outline:none;width:100%;border-radius:0;transition:border-color .2s;}
   .field input:focus,.field textarea:focus{border-color:var(--gold);}
   .field textarea{height:64px;resize:none;}
-  .free-badge{font-size:11px;color:var(--ink-faint);line-height:1.6;padding:8px 10px;background:var(--gold-pale);border:1px solid var(--border);text-align:center;}
-  .free-badge strong{color:var(--gold);}
+  .free-badge{font-size:11px;color:var(--ink-faint);line-height:1.8;padding:10px 12px;background:var(--gold-pale);border:1px solid var(--border);text-align:center;}
+  .free-badge strong{color:var(--gold);font-size:13px;}
   .tone-row{display:flex;gap:6px;}
   .tone-btn{flex:1;font-size:12px;font-family:'Noto Sans TC',sans-serif;font-weight:300;padding:6px 4px;border:1px solid var(--border);background:var(--cream);color:var(--ink-light);cursor:pointer;border-radius:0;transition:all .15s;}
   .tone-btn.on{background:var(--gold-pale);border-color:var(--gold);color:var(--ink);}
@@ -65,7 +65,10 @@
   </div>
   <div class="layout">
     <div class="sidebar">
-      <div class="free-badge"><strong>✦ 完全免費</strong><br>不需要 API Key<br>開啟即可使用</div>
+      <div class="free-badge">
+        <strong>✦ 完全免費</strong><br>
+        不需要 API Key<br>開啟即可使用
+      </div>
       <div class="panel">
         <div class="panel-title">背景資訊（選填）</div>
         <div class="field"><label>與對方的關係</label><input type="text" id="rel" placeholder="同事、高中同學…"/></div>
@@ -89,7 +92,15 @@
   </div>
 </div>
 <script>
-var currentTone='輕鬆',lockedCards={},results=[],isLoading=false;
+var currentTone='輕鬆', lockedCards={}, results=[], isLoading=false;
+
+// 依序嘗試的模型，全部是 Puter.js 支援的免費模型
+var MODELS = [
+  'google/gemini-3.5-flash',
+  'mistralai/mistral-small-2603',
+  'qwen/qwen3.6-flash',
+  'z-ai/glm-5.2'
+];
 
 function setTone(btn){
   document.querySelectorAll('.tone-btn').forEach(function(b){b.classList.remove('on');});
@@ -108,8 +119,24 @@ function buildPrompt(){
   if(trait) ctx+='對方個性或興趣：'+trait+'\n';
   if(age) ctx+='幾歲生日：'+age+'\n';
   if(note) ctx+='其他備註：'+note+'\n';
-  var hasCtx=ctx.trim().length>0;
-  return '你是一個幫人寫生日祝福的助手。請產生5則生日祝福訊息。\n\n語氣要求：'+currentTone+'\n注意事項：\n- 不要太制式、不要像範本套用\n- 不要裝熟，保持一點點禮貌距離，像是傳給不太熟的朋友那種感覺\n- 不要用「願你」「祝你」這種起頭，可以換個方式進入\n- 標點符號全部用空格代替（不要用逗號、句號、驚嘆號等任何標點），可以適時加入合適的emoji\n- 每則大約2-4行，長短自然不一\n- 5則風格要明顯不同\n'+(hasCtx?'\n對象背景資訊：\n'+ctx+'\n請根據以上背景，讓祝福內容更貼合這個人':'')+'\n\n請直接回傳JSON格式，不要加任何說明文字或markdown符號：\n{"wishes":["第一則","第二則","第三則","第四則","第五則"]}';
+  return '你是一個幫人寫生日祝福的助手。請產生5則生日祝福訊息。\n\n語氣要求：'+currentTone+'\n注意事項：\n- 不要太制式、不要像範本套用\n- 不要裝熟，保持一點點禮貌距離，像是傳給不太熟的朋友那種感覺\n- 不要用「願你」「祝你」這種起頭，可以換個方式進入\n- 標點符號全部用空格代替（不要用逗號、句號、驚嘆號等任何標點），可以適時加入合適的emoji\n- 每則大約2-4行，長短自然不一\n- 5則風格要明顯不同\n'+(ctx?'\n對象背景資訊：\n'+ctx+'\n請根據以上背景，讓祝福內容更貼合這個人':'')+'\n\n請直接回傳JSON格式，不要加任何說明文字或markdown符號：\n{"wishes":["第一則","第二則","第三則","第四則","第五則"]}';
+}
+
+function extractText(response) {
+  if (typeof response === 'string') return response;
+  if (response && response.message && response.message.content) return response.message.content;
+  if (response && response.content) return response.content;
+  if (response && response.text) return response.text;
+  return JSON.stringify(response);
+}
+
+async function tryModel(model, prompt) {
+  var response = await puter.ai.chat(prompt, { model: model });
+  var text = extractText(response);
+  var clean = text.replace(/```json|```/g,'').trim();
+  var match = clean.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('格式錯誤');
+  return JSON.parse(match[0]);
 }
 
 async function generate(){
@@ -129,20 +156,25 @@ async function generate(){
   }
   main.innerHTML=html;
 
-  try{
-    var response = await puter.ai.chat(buildPrompt(), {model:'meta-llama/llama-3.3-70b-instruct:free'});
-    var text = typeof response==='string' ? response : (response.message?.content || response.content || JSON.stringify(response));
-    var clean=text.replace(/```json|```/g,'').trim();
-    // find JSON object
-    var match=clean.match(/\{[\s\S]*\}/);
-    if(!match) throw new Error('回傳格式錯誤：'+clean.substring(0,200));
-    var parsed=JSON.parse(match[0]);
+  var prompt=buildPrompt();
+  var parsed=null, lastErr='';
+
+  for(var m=0;m<MODELS.length;m++){
+    try{
+      parsed = await tryModel(MODELS[m], prompt);
+      break;
+    }catch(e){
+      lastErr = MODELS[m]+': '+e.message;
+    }
+  }
+
+  if(parsed){
     results=parsed.wishes;
     lockedCards={};
     Object.keys(lockedTexts).forEach(function(i){results[i]=lockedTexts[i];lockedCards[i]=true;});
     renderCards();
-  }catch(e){
-    main.innerHTML='<div class="error-msg">出了點問題\n'+esc(e.message||'請再試一次')+'</div>';
+  } else {
+    main.innerHTML='<div class="error-msg">出了點問題\n'+esc(lastErr)+'</div>';
   }
 
   isLoading=false; btn.disabled=false; btn.textContent='產 生 五 個 版 本';
@@ -164,9 +196,7 @@ function makeCard(i,text,locked){
 }
 
 function renderCards(){
-  document.getElementById('main').innerHTML=results.map(function(text,i){
-    return makeCard(i,text,!!lockedCards[i]);
-  }).join('');
+  document.getElementById('main').innerHTML=results.map(function(t,i){return makeCard(i,t,!!lockedCards[i]);}).join('');
 }
 
 function toggleLock(i){
