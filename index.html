@@ -1,150 +1,429 @@
-bash
-python3 << 'PYEOF'
-content = open('/mnt/user-data/outputs/wish_generator.html', 'r').read()
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>節日祝福產生器</title>
+<script src="https://js.puter.com/v2/"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500&family=Noto+Sans+TC:wght@300;400;500&display=swap');
+:root{--cream:#F5F0E8;--ink:#2C2416;--ink-l:#6B5E4A;--ink-f:#A8997E;--gold:#C4963A;--gold-l:#E8C97A;--gold-p:#F5EDD0;--border:#D9CEB8;--white:#FFF;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--cream);color:var(--ink);font-family:'Noto Sans TC',sans-serif;font-weight:300;min-height:100vh;padding:40px 20px;}
+.page{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:32px;}
+.header{text-align:center;}
+.eyebrow{font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;}
+.header h1{font-family:'Noto Serif TC',serif;font-size:24px;font-weight:300;letter-spacing:.08em;}
+.hline{width:36px;height:1px;background:var(--gold);margin:14px auto 0;}
+.slabel{font-size:11px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:10px;}
+.top{display:flex;gap:24px;align-items:flex-start;}
+.cal-wrap{flex:1;min-width:0;}
+.cal-card{background:var(--white);border:1px solid var(--border);padding:20px;}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.cal-title{font-family:'Noto Serif TC',serif;font-size:15px;font-weight:400;letter-spacing:.06em;}
+.cal-nav{background:transparent;border:1px solid var(--border);color:var(--ink-l);font-size:14px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.cal-nav:hover{border-color:var(--gold);color:var(--gold);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-dow{font-size:11px;color:var(--ink-f);text-align:center;padding:4px 0;}
+.cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;cursor:pointer;position:relative;border:1px solid transparent;transition:all .15s;}
+.cal-day:hover{background:var(--gold-p);border-color:var(--border);}
+.cal-day.today{font-weight:500;color:var(--gold);}
+.cal-day.has-h .dot{width:4px;height:4px;background:var(--gold);border-radius:50%;position:absolute;bottom:3px;}
+.cal-day.sel{background:var(--gold-p);border-color:var(--gold);}
+.cal-day.empty{cursor:default;pointer-events:none;}
+.popup{margin-top:12px;padding:12px 16px;background:var(--gold-p);border:1px solid var(--border);font-size:13px;color:var(--ink-l);line-height:1.8;min-height:44px;}
+.hday{color:var(--gold);font-weight:500;}
+.use-btn{padding:3px 9px;background:var(--ink);color:var(--cream);border:none;font-size:11px;cursor:pointer;margin-left:8px;font-family:'Noto Sans TC',sans-serif;}
+.use-btn:hover{background:var(--gold);color:var(--ink);}
+.sw{width:240px;flex-shrink:0;}
+.panel{background:var(--white);border:1px solid var(--border);padding:18px;display:flex;flex-direction:column;gap:12px;}
+.ptitle{font-size:11px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;}
+.si{background:var(--cream);border:1px solid var(--border);color:var(--ink);font-family:'Noto Sans TC',sans-serif;font-weight:300;font-size:13px;padding:7px 10px;outline:none;width:100%;border-radius:0;transition:border-color .2s;}
+.si:focus{border-color:var(--gold);}
+.hlist{max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;}
+.hlist::-webkit-scrollbar{width:4px;}
+.hlist::-webkit-scrollbar-thumb{background:var(--border);}
+.hitem{padding:7px 10px;font-size:13px;cursor:pointer;color:var(--ink-l);border:1px solid transparent;transition:all .12s;}
+.hitem:hover{background:var(--gold-p);border-color:var(--border);color:var(--ink);}
+.hitem.sel{background:var(--gold-p);border-color:var(--gold);color:var(--ink);}
+.hitem-sub{font-size:11px;color:var(--ink-f);margin-top:1px;}
+.gsec{display:flex;gap:24px;align-items:flex-start;}
+.gsb{width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:16px;}
+.stag{padding:10px 12px;background:var(--gold-p);border:1px solid var(--border);font-size:13px;color:var(--ink-l);line-height:1.6;}
+.stag strong{color:var(--gold);display:block;font-size:14px;margin-bottom:2px;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:12px;color:var(--ink-l);}
+.field input,.field textarea{background:var(--cream);border:1px solid var(--border);color:var(--ink);font-family:'Noto Sans TC',sans-serif;font-weight:300;font-size:13px;padding:7px 10px;outline:none;width:100%;border-radius:0;transition:border-color .2s;}
+.field input:focus,.field textarea:focus{border-color:var(--gold);}
+.field textarea{height:60px;resize:none;}
+.trow{display:flex;gap:6px;}
+.tbtn{flex:1;font-size:12px;font-family:'Noto Sans TC',sans-serif;font-weight:300;padding:6px 4px;border:1px solid var(--border);background:var(--cream);color:var(--ink-l);cursor:pointer;border-radius:0;transition:all .15s;}
+.tbtn.on{background:var(--gold-p);border-color:var(--gold);color:var(--ink);}
+.gbtn{width:100%;padding:11px;background:var(--ink);color:var(--cream);border:none;font-family:'Noto Serif TC',serif;font-size:13px;font-weight:300;letter-spacing:.12em;cursor:pointer;transition:background .2s;border-radius:0;}
+.gbtn:hover{background:var(--gold);color:var(--ink);}
+.gbtn:disabled{background:var(--ink-f);cursor:not-allowed;}
+.fnote{font-size:11px;color:var(--ink-f);text-align:center;line-height:1.6;}
+.results{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px;}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 24px;border:1px dashed var(--border);color:var(--ink-f);gap:10px;}
+.empty .ei{font-size:28px;opacity:.6;}
+.empty p{font-size:13px;text-align:center;line-height:1.6;}
+.wcard{background:var(--white);border:1px solid var(--border);padding:18px 20px;display:flex;flex-direction:column;gap:10px;}
+.wcard.lk{border-color:var(--gold);background:#FFFDF7;}
+.ctop{display:flex;align-items:center;justify-content:space-between;}
+.cnum{font-size:11px;letter-spacing:.14em;color:var(--ink-f);}
+.cacts{display:flex;gap:6px;align-items:center;}
+.ltag{font-size:11px;color:var(--gold);padding:2px 7px;border:1px solid var(--gold-l);background:var(--gold-p);}
+.abtn{font-size:12px;font-family:'Noto Sans TC',sans-serif;font-weight:300;padding:4px 9px;border:1px solid var(--border);background:transparent;color:var(--ink-l);cursor:pointer;transition:all .15s;border-radius:0;}
+.abtn:hover{border-color:var(--ink-l);color:var(--ink);}
+.abtn.lo{border-color:var(--gold);color:var(--gold);}
+.abtn.cp{border-color:#7A9E7E;color:#4A7A4E;background:#F0F5F0;}
+.ctext{font-family:'Noto Serif TC',serif;font-size:14px;font-weight:300;color:var(--ink);line-height:1.95;white-space:pre-wrap;letter-spacing:.04em;}
+.div{width:100%;height:1px;background:var(--border);}
+.lcard{background:var(--white);border:1px solid var(--border);padding:18px 20px;color:var(--ink-f);font-size:13px;animation:pulse 1.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.errmsg{padding:18px 20px;color:#9B4A3A;font-size:13px;border:1px solid #E8C4BC;background:#FDF5F3;line-height:1.7;white-space:pre-wrap;}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="eyebrow">Wish Generator</div>
+    <h1>節日祝福產生器</h1>
+    <div class="hline"></div>
+  </div>
 
-start_idx = content.find('// \u2500\u2500 \u570b\u5b9a\u5047\u65e5 \u2500\u2500')
-end_idx = content.find('\n\n// date \u2192 holidays map')
+  <div class="top">
+    <div class="cal-wrap">
+      <div class="slabel">行 事 曆</div>
+      <div class="cal-card">
+        <div class="cal-header">
+          <button class="cal-nav" onclick="chM(-1)">&#8249;</button>
+          <div class="cal-title" id="calTitle"></div>
+          <button class="cal-nav" onclick="chM(1)">&#8250;</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div class="popup" id="popup">點選日期查看節日</div>
+    </div>
+    <div class="sw">
+      <div class="slabel">節 日 選 擇</div>
+      <div class="panel">
+        <div class="ptitle">搜尋節日</div>
+        <input class="si" type="text" id="q" placeholder="輸入節日名稱或職業…" oninput="filterH()"/>
+        <div class="hlist" id="hlist"></div>
+      </div>
+    </div>
+  </div>
 
-print(f"start:{start_idx} end:{end_idx}")
+  <div>
+    <div class="slabel">產 生 祝 福</div>
+    <div class="gsec">
+      <div class="gsb">
+        <div class="stag">
+          <strong id="sname">尚未選擇節日</strong>
+          <span id="sdate" style="font-size:11px;color:var(--ink-f)"></span>
+        </div>
+        <div class="panel">
+          <div class="ptitle">背景資訊（選填）</div>
+          <div class="field"><label>與對方的關係</label><input type="text" id="rel" placeholder="同事、朋友…"/></div>
+          <div class="field"><label>個性或興趣</label><input type="text" id="trait" placeholder="愛喝咖啡…"/></div>
+          <div class="field"><label>其他備註</label><textarea id="note" placeholder="換工作、剛升遷…"></textarea></div>
+        </div>
+        <div class="panel">
+          <div class="ptitle">語氣</div>
+          <div class="trow">
+            <button class="tbtn on" data-t="輕鬆" onclick="setT(this)">輕鬆</button>
+            <button class="tbtn" data-t="溫馨" onclick="setT(this)">溫馨</button>
+            <button class="tbtn" data-t="搞笑" onclick="setT(this)">搞笑</button>
+          </div>
+        </div>
+        <button class="gbtn" id="gbtn" onclick="gen()">產 生 五 個 版 本</button>
+        <div class="fnote">完全免費 · 不需 API Key</div>
+      </div>
+      <div class="results" id="res">
+        <div class="empty"><div class="ei">🎊</div><p>選擇節日後<br>按「產生五個版本」</p></div>
+      </div>
+    </div>
+  </div>
+</div>
 
-new_holidays = """// \u2500\u2500 \u570b\u5b9a\u5047\u65e5 \u2500\u2500
-  {name:'\u5143\u65e6',date:'2026-01-01',cat:'\u570b\u5b9a\u5047\u65e5',emoji:'\ud83c\udf89'},
-  {name:'\u548c\u5e73\u7d00\u5ff5\u65e5',date:'2026-02-28',cat:'\u570b\u5b9a\u5047\u65e5',emoji:'\ud83d\udd4a\ufe0f'},
-  {name:'\u5152\u7ae5\u7bc0',date:'2026-04-04',cat:'\u570b\u5b9a\u5047\u65e5',emoji:'\ud83e\uddf8'},
-  {name:'\u6e05\u660e\u7bc0',date:'2026-04-05',cat:'\u570b\u5b9a\u5047\u65e5',emoji:'\ud83c\udf3f'},
-  {name:'\u52de\u52d5\u7bc0',date:'2026-05-01',cat:'\u570b\u5b9a\u5047\u65e5',emoji:'\u2692\ufe0f'},
-  {name:'\u7aef\u5348\u7bc0',date:'2026-06-19',cat:'\u570b\u5b9a\u5047\u65e5',emoji:'\ud83d\udc09'},
-  {name:'\u4e2d\u79cb\u7bc0',date:'2026-09-25',cat:'\u570b\u5b9a\u5047\u65e5',emoji:'\ud83e\udd6e'},
-  {name:'\u6559\u5e2b\u7bc0',date:'2026-09-28',cat:'\u570b\u5b9a\u5047\u65e5',emoji:'\ud83d\udcda'},
-  {name:'\u570b\u6176\u65e5',date:'2026-10-10',cat:'\u570b\u5b9a\u5047\u65e5',emoji:'\ud83c\uddf9\ud83c\uddfc'},
-  {name:'\u53f0\u7063\u5149\u5fa9\u7bc0',date:'2026-10-25',cat:'\u570b\u5b9a\u5047\u65e5',emoji:'\ud83c\uddf9\ud83c\uddfc'},
-  {name:'\u884c\u6191\u7d00\u5ff5\u65e5',date:'2026-12-25',cat:'\u570b\u5b9a\u5047\u65e5',emoji:'\ud83d\udcdc'},
-  // \u2500\u2500 \u8fb2\u66c6\u7bc0\u65e5\uff082026\u5e74\u5df2\u63db\u7b97\u570b\u66c6\uff09 \u2500\u2500
-  {name:'\u5c0f\u5e74\u5920',date:'2026-02-15',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\ud83e\udde8'},
-  {name:'\u9664\u5915',date:'2026-02-16',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\ud83e\udde8'},
-  {name:'\u6625\u7bc0\uff08\u521d\u4e00\uff09',date:'2026-02-17',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\ud83e\udde7'},
-  {name:'\u6625\u7bc0\uff08\u521d\u4e8c\uff09',date:'2026-02-18',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\ud83e\udde7'},
-  {name:'\u6625\u7bc0\uff08\u521d\u4e09\uff09',date:'2026-02-19',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\ud83e\udde7'},
-  {name:'\u5143\u5bb5\u7bc0',date:'2026-03-03',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\ud83c\udff0'},
-  {name:'\u4f5b\u9640\u8aa4\u8fb0\u65e5',date:'2026-05-25',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\ud83e\udeb7'},
-  {name:'\u4e03\u5915\u60c5\u4eba\u7bc0',date:'2026-08-19',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\ud83d\udcab'},
-  {name:'\u4e2d\u5143\u7bc0',date:'2026-08-20',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\ud83d\udd6f\ufe0f'},
-  {name:'\u91cd\u967d\u7bc0',date:'2026-10-18',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\ud83c\udf42'},
-  {name:'\u51ac\u81f3',date:'2026-12-22',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\ud83e\udd63'},
-  {name:'\u5c3e\u7259',date:'2026-02-04',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\ud83c\udf56'},
-  {name:'\u958b\u5de5\u65e5',date:'2026-02-23',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\ud83d\udcbc'},
-  {name:'\u9053\u6559\u7bc0',date:'2026-02-17',cat:'\u8fb2\u66c6\u7bc0\u65e5',emoji:'\u262f\ufe0f'},
-  // \u2500\u2500 \u897f\u6d0b\u7bc0\u65e5 \u2500\u2500
-  {name:'\u897f\u6d0b\u60c5\u4eba\u7bc0',date:'2026-02-14',cat:'\u897f\u6d0b\u7bc0\u65e5',emoji:'\ud83d\udc9d'},
-  {name:'\u611a\u4eba\u7bc0',date:'2026-04-01',cat:'\u897f\u6d0b\u7bc0\u65e5',emoji:'\ud83c\udca3'},
-  {name:'\u5fa9\u6d3b\u7bc0',date:'2026-04-05',cat:'\u897f\u6d0b\u7bc0\u65e5',emoji:'\ud83d\udc23'},
-  {name:'\u6bcd\u89aa\u7bc0',date:'2026-05-10',cat:'\u897f\u6d0b\u7bc0\u65e5',emoji:'\ud83d\udc90'},
-  {name:'\u7236\u89aa\u7bc0',date:'2026-08-08',cat:'\u897f\u6d0b\u7bc0\u65e5',emoji:'\ud83d\udc54'},
-  {name:'\u7956\u7236\u6bcd\u7bc0',date:'2026-08-23',cat:'\u897f\u6d0b\u7bc0\u65e5',emoji:'\ud83d\udc74'},
-  {name:'\u842c\u8056\u7bc0',date:'2026-10-31',cat:'\u897f\u6d0b\u7bc0\u65e5',emoji:'\ud83c\udf83'},
-  {name:'\u611f\u6069\u7bc0',date:'2026-11-26',cat:'\u897f\u6d0b\u7bc0\u65e5',emoji:'\ud83e\udd83'},
-  {name:'\u8056\u8a95\u5920',date:'2026-12-24',cat:'\u897f\u6d0b\u7bc0\u65e5',emoji:'\ud83c\udf85'},
-  {name:'\u8056\u8a95\u7bc0',date:'2026-12-25',cat:'\u897f\u6d0b\u7bc0\u65e5',emoji:'\ud83c\udf84'},
-  {name:'\u8de8\u5e74\u5920',date:'2026-12-31',cat:'\u897f\u6d0b\u7bc0\u65e5',emoji:'\ud83c\udf86'},
-  // \u2500\u2500 \u8077\u696d\u7bc0\u65e5\uff08\u4f9d\u300a\u7d00\u5ff5\u65e5\u53ca\u7bc0\u65e5\u5be6\u65bd\u689d\u4f8b\u300b\u53ca\u5167\u653f\u90e8\u6838\u5b9a\uff09 \u2500\u2500
-  {name:'\u6d88\u9632\u7bc0',date:'2026-01-19',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\ude92'},
-  {name:'\u8fb2\u6c11\u7bc0',date:'2026-02-04',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83c\udf3e'},
-  {name:'\u6797\u696d\u7bc0',date:'2026-03-12',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83c\udf33'},
-  {name:'\u90f5\u653f\u7bc0',date:'2026-03-20',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udcee'},
-  {name:'\u6c23\u8c61\u7bc0',date:'2026-03-23',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83c\udf24\ufe0f'},
-  {name:'\u570b\u969b\u91ab\u5e2b\u7bc0',date:'2026-03-30',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\u2695\ufe0f'},
-  {name:'\u5730\u653f\u7bc0',date:'2026-04-01',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udcd0'},
-  {name:'\u5716\u66f8\u9928\u54e1\u7bc0',date:'2026-04-02',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udcd6'},
-  {name:'\u5730\u8cea\u7bc0',date:'2026-04-22',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83e\udea8'},
-  {name:'\u79d8\u66f8\u7bc0',date:'2026-04-22',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udccb'},
-  {name:'\u7f8e\u5bb9\u7f8e\u9aee\u7bc0',date:'2026-04-15',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udc87'},
-  {name:'\u52a9\u7522\u5e2b\u7bc0',date:'2026-05-05',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udc76'},
-  {name:'\u570b\u969b\u8b77\u7406\u5e2b\u7bc0',date:'2026-05-12',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udc89'},
-  {name:'\u5c0e\u904a\u7bc0',date:'2026-05-19',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\uddfa\ufe0f'},
-  {name:'\u5152\u7ae5\u5b89\u5168\u65e5',date:'2026-05-15',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83e\uddd2'},
-  {name:'\u4e16\u754c\u7121\u83f8\u65e5',date:'2026-05-31',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udeab'},
-  {name:'\u5f8b\u5e2b\u7bc0',date:'2026-06-03',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\u2696\ufe0f'},
-  {name:'\u7981\u7159\u7bc0',date:'2026-06-03',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udead'},
-  {name:'\u5de5\u7a0b\u5e2b\u7bc0',date:'2026-06-06',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\u2699\ufe0f'},
-  {name:'\u7372\u91ab\u5e2b\u7bc0',date:'2026-06-06',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udc3e'},
-  {name:'\u6c34\u5229\u7bc0',date:'2026-06-06',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udca7'},
-  {name:'\u53f8\u6cd5\u7bc0',date:'2026-06-11',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\u2696\ufe0f'},
-  {name:'\u8b66\u5bdf\u7bc0',date:'2026-06-15',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udc6e'},
-  {name:'\u6f01\u6c11\u7bc0',date:'2026-07-01',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83c\udfa3'},
-  {name:'\u5408\u4f5c\u7bc0',date:'2026-07-04',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83e\udd1d'},
-  {name:'\u9678\u8ecd\u7bc0',date:'2026-07-07',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83e\ude96'},
-  {name:'\u7a7a\u8ecd\u7bc0',date:'2026-08-14',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\u2708\ufe0f'},
-  {name:'\u6d77\u8ecd\u7bc0',date:'2026-09-02',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\u2693'},
-  {name:'\u8a18\u8005\u7bc0',date:'2026-09-01',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udcf0'},
-  {name:'\u8ecd\u4eba\u7bc0',date:'2026-09-03',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83c\uddf6\ud83c\uddf0'},
-  {name:'\u85e5\u5e2b\u7bc0',date:'2026-09-09',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udc8a'},
-  {name:'\u570b\u6c11\u9ad4\u80b2\u65e5',date:'2026-09-09',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83c\udfc3'},
-  {name:'\u6703\u8a08\u5e2b\u7bc0',date:'2026-09-09',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udcca'},
-  {name:'\u5730\u653f\u58eb\u7bc0',date:'2026-09-15',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83c\udfe0'},
-  {name:'\u570b\u969b\u548c\u5e73\u65e5',date:'2026-09-21',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\u262e\ufe0f'},
-  {name:'\u7d71\u8a08\u7bc0',date:'2026-10-17',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udcc8'},
-  {name:'\u5ec9\u5e2b\u7bc0',date:'2026-10-20',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udc68\u200d\ud83c\udf73'},
-  {name:'\u865b\u80fd\u6cbb\u7642\u5e2b\u7bc0',date:'2026-10-27',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\ude4c'},
-  {name:'\u5de5\u50b7\u65e5',date:'2026-10-28',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83e\uddb5'},
-  {name:'\u6e05\u6f54\u968a\u54e1\u7bc0',date:'2026-10-25',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\u267b\ufe0f'},
-  {name:'\u69ae\u6c11\u7bc0',date:'2026-10-31',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83c\udf97\ufe0f'},
-  {name:'\u5546\u4eba\u7bc0',date:'2026-11-01',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udcbc'},
-  {name:'\u79d8\u66f8\u7bc0',date:'2026-04-22',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udccb'},
-  {name:'\u8853\u8a00\u81ea\u7531\u65e5',date:'2026-11-07',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udde3\ufe0f'},
-  {name:'\u885b\u751f\u7bc0',date:'2026-11-07',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83e\uddf4'},
-  {name:'\u6d77\u5de1\u7bc0',date:'2026-11-08',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udea2'},
-  {name:'\u5de5\u696d\u7bc0',date:'2026-11-11',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83c\udfe5'},
-  {name:'\u5730\u653f\u7bc0',date:'2026-11-11',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udcd0'},
-  {name:'\u8a3a\u5e2b\u7bc0',date:'2026-11-12',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83e\ude7a'},
-  {name:'\u7259\u91ab\u5e2b\u7bc0',date:'2026-11-04',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83e\uddb7'},
-  {name:'\u6587\u85dd\u7bc0',date:'2026-11-04',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83c\udfa8'},
-  {name:'\u821e\u8e48\u7bc0',date:'2026-11-05',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udc83'},
-  {name:'\u9632\u7a7a\u7bc0',date:'2026-11-21',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udee1\ufe0f'},
-  {name:'\u5efa\u7bc9\u5e2b\u7bc0',date:'2026-11-27',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83c\udfd7\ufe0f'},
-  {name:'\u96fb\u4fe1\u7bc0',date:'2026-11-28',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83d\udce1'},
-  {name:'\u61b2\u5175\u7bc0',date:'2026-12-12',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\ud83e\ude96'},
-  {name:'\u7720\u696d\u7bc0',date:'2026-11-01',cat:'\u8077\u696d\u7bc0\u65e5',emoji:'\u26cf\ufe0f'},
-  // \u2500\u2500 \u7d00\u5ff5\u65e5 \u2500\u2500
-  {name:'\u5a66\u5973\u7bc0',date:'2026-03-08',cat:'\u7d00\u5ff5\u65e5',emoji:'\u2640\ufe0f'},
-  {name:'\u690d\u6a39\u7bc0',date:'2026-03-12',cat:'\u7d00\u5ff5\u65e5',emoji:'\ud83c\udf31'},
-  {name:'\u9752\u5e74\u7bc0',date:'2026-03-29',cat:'\u7d00\u5ff5\u65e5',emoji:'\ud83c\udf1f'},
-  {name:'\u9769\u547d\u5148\u70c8\u7d00\u5ff5\u65e5',date:'2026-03-29',cat:'\u7d00\u5ff5\u65e5',emoji:'\ud83c\udf39'},
-  {name:'\u89e3\u56b4\u7d00\u5ff5\u65e5',date:'2026-07-15',cat:'\u7d00\u5ff5\u65e5',emoji:'\ud83d\udcdc'},
-  {name:'\u5011\u5b50\u8aa0\u8fb0\u7d00\u5ff5\u65e5',date:'2026-09-28',cat:'\u7d00\u5ff5\u65e5',emoji:'\ud83d\udcda'},
-  {name:'\u4e2d\u83ef\u6587\u5316\u5fa9\u8208\u7bc0',date:'2026-11-12',cat:'\u7d00\u5ff5\u65e5',emoji:'\ud83c\udff0'},
-  {name:'\u570b\u7236\u8aa4\u8fb0\u7d00\u5ff5\u65e5',date:'2026-11-12',cat:'\u7d00\u5ff5\u65e5',emoji:'\ud83c\udf10'},
-  {name:'\u8eab\u5fc3\u969c\u7919\u8005\u65e5',date:'2026-12-03',cat:'\u7d00\u5ff5\u65e5',emoji:'\u267f'},
-  {name:'\u4eba\u6b0a\u65e5',date:'2026-12-10',cat:'\u7d00\u5ff5\u65e5',emoji:'\u270a'},
-  {name:'\u79fb\u6c11\u65e5',date:'2026-12-18',cat:'\u7d00\u5ff5\u65e5',emoji:'\ud83c\udf0f'},
-  // \u2500\u2500 \u570b\u969b\u7bc0\u65e5 \u2500\u2500
-  {name:'\u4e16\u754c\u5730\u7403\u65e5',date:'2026-04-22',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83c\udf0d'},
-  {name:'\u4e16\u754c\u8b80\u66f8\u65e5',date:'2026-04-23',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83d\udcd6'},
-  {name:'\u570b\u969b\u5a66\u5973\u7bc0',date:'2026-03-08',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83d\udcaa'},
-  {name:'\u4e16\u754c\u74b0\u5883\u65e5',date:'2026-06-05',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83c\udf31'},
-  {name:'\u4e16\u754c\u6d77\u6d0b\u65e5',date:'2026-06-08',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83c\udf0a'},
-  {name:'\u4e16\u754c\u4eba\u53e3\u65e5',date:'2026-07-11',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83c\udf0f'},
-  {name:'\u4e16\u754c\u7cae\u98df\u65e5',date:'2026-10-16',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83c\udf3e'},
-  {name:'\u4e16\u754c\u5fc3\u7406\u5065\u5eb7\u65e5',date:'2026-10-10',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83e\udde0'},
-  {name:'\u570b\u969b\u5152\u7ae5\u7bc0',date:'2026-06-01',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83e\uddd2'},
-  {name:'\u4e16\u754c\u52d5\u7269\u65e5',date:'2026-10-04',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83d\udc3e'},
-  {name:'\u4e16\u754c\u764c\u75c7\u65e5',date:'2026-02-04',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83c\udf97\ufe0f'},
-  {name:'\u4e16\u754c\u611b\u8332\u75c5\u65e5',date:'2026-12-01',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83c\udf97\ufe0f'},
-  {name:'\u570b\u969b\u8001\u4eba\u7bc0',date:'2026-10-01',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83d\udc74'},
-  {name:'\u4e16\u754c\u6c34\u65e5',date:'2026-03-22',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83d\udca7'},
-  {name:'\u4e16\u754c\u6c23\u8c61\u65e5',date:'2026-03-23',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83c\udf24\ufe0f'},
-  {name:'\u4e16\u754c\u885b\u751f\u65e5',date:'2026-04-07',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83c\udfe5'},
-  {name:'\u4e16\u754c\u6559\u5e2b\u7bc0',date:'2026-10-05',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83c\udf4e'},
-  {name:'\u4e16\u754c\u7cd6\u5c3f\u75c5\u65e5',date:'2026-11-14',cat:'\u570b\u969b\u7bc0\u65e5',emoji:'\ud83d\udc99'},
-"""
+<script>
+var H=[
+  // 國定假日
+  {n:'元旦',d:'2026-01-01',c:'國定假日',e:'🎉'},
+  {n:'和平紀念日',d:'2026-02-28',c:'國定假日',e:'🕊️'},
+  {n:'兒童節',d:'2026-04-04',c:'國定假日',e:'🧸'},
+  {n:'清明節',d:'2026-04-05',c:'國定假日',e:'🌿'},
+  {n:'勞動節',d:'2026-05-01',c:'國定假日',e:'⚒️'},
+  {n:'端午節',d:'2026-06-19',c:'國定假日',e:'🐉'},
+  {n:'中秋節',d:'2026-09-25',c:'國定假日',e:'🥮'},
+  {n:'教師節',d:'2026-09-28',c:'國定假日',e:'📚'},
+  {n:'國慶日',d:'2026-10-10',c:'國定假日',e:'🇹🇼'},
+  {n:'台灣光復節',d:'2026-10-25',c:'國定假日',e:'🇹🇼'},
+  {n:'行憲紀念日',d:'2026-12-25',c:'國定假日',e:'📜'},
+  // 農曆節日（已換算2026國曆）
+  {n:'小年夜',d:'2026-02-15',c:'農曆節日',e:'🧨'},
+  {n:'除夕',d:'2026-02-16',c:'農曆節日',e:'🧨'},
+  {n:'春節（初一）',d:'2026-02-17',c:'農曆節日',e:'🧧'},
+  {n:'春節（初二）',d:'2026-02-18',c:'農曆節日',e:'🧧'},
+  {n:'春節（初三）',d:'2026-02-19',c:'農曆節日',e:'🧧'},
+  {n:'元宵節',d:'2026-03-03',c:'農曆節日',e:'🏮'},
+  {n:'佛陀誕辰日',d:'2026-05-25',c:'農曆節日',e:'🪷'},
+  {n:'七夕情人節',d:'2026-08-19',c:'農曆節日',e:'💫'},
+  {n:'中元節',d:'2026-08-20',c:'農曆節日',e:'🕯️'},
+  {n:'重陽節',d:'2026-10-18',c:'農曆節日',e:'🍂'},
+  {n:'冬至',d:'2026-12-22',c:'農曆節日',e:'🥣'},
+  {n:'尾牙',d:'2026-02-04',c:'農曆節日',e:'🍖'},
+  {n:'開工日',d:'2026-02-23',c:'農曆節日',e:'💼'},
+  {n:'道教節',d:'2026-02-17',c:'農曆節日',e:'☯️'},
+  // 西洋節日
+  {n:'西洋情人節',d:'2026-02-14',c:'西洋節日',e:'💝'},
+  {n:'愚人節',d:'2026-04-01',c:'西洋節日',e:'🃏'},
+  {n:'復活節',d:'2026-04-05',c:'西洋節日',e:'🐣'},
+  {n:'母親節',d:'2026-05-10',c:'西洋節日',e:'💐'},
+  {n:'父親節',d:'2026-08-08',c:'西洋節日',e:'👔'},
+  {n:'祖父母節',d:'2026-08-23',c:'西洋節日',e:'👴'},
+  {n:'萬聖節',d:'2026-10-31',c:'西洋節日',e:'🎃'},
+  {n:'感恩節',d:'2026-11-26',c:'西洋節日',e:'🦃'},
+  {n:'聖誕夜',d:'2026-12-24',c:'西洋節日',e:'🎅'},
+  {n:'聖誕節',d:'2026-12-25',c:'西洋節日',e:'🎄'},
+  {n:'跨年夜',d:'2026-12-31',c:'西洋節日',e:'🎆'},
+  // 職業節日（依《紀念日及節日實施條例》及內政部核定）
+  {n:'消防節',d:'2026-01-19',c:'職業節日',e:'🚒'},
+  {n:'農民節',d:'2026-02-04',c:'職業節日',e:'🌾'},
+  {n:'林業節',d:'2026-03-12',c:'職業節日',e:'🌳'},
+  {n:'社工節',d:'2026-03-05',c:'職業節日',e:'🤝'},
+  {n:'郵政節',d:'2026-03-20',c:'職業節日',e:'📮'},
+  {n:'氣象節',d:'2026-03-23',c:'職業節日',e:'🌤️'},
+  {n:'國際醫師節',d:'2026-03-30',c:'職業節日',e:'⚕️'},
+  {n:'地政節',d:'2026-04-01',c:'職業節日',e:'📐'},
+  {n:'圖書館員節',d:'2026-04-02',c:'職業節日',e:'📖'},
+  {n:'美容美髮節',d:'2026-04-15',c:'職業節日',e:'💇'},
+  {n:'地質節',d:'2026-04-22',c:'職業節日',e:'🪨'},
+  {n:'秘書節',d:'2026-04-22',c:'職業節日',e:'📋'},
+  {n:'獸醫師節',d:'2026-06-06',c:'職業節日',e:'🐾'},
+  {n:'助產師節',d:'2026-05-05',c:'職業節日',e:'👶'},
+  {n:'國際護理師節',d:'2026-05-12',c:'職業節日',e:'💉'},
+  {n:'兒童安全日',d:'2026-05-15',c:'職業節日',e:'🧒'},
+  {n:'導遊節',d:'2026-05-19',c:'職業節日',e:'🗺️'},
+  {n:'禁煙節',d:'2026-06-03',c:'職業節日',e:'🚭'},
+  {n:'律師節',d:'2026-06-03',c:'職業節日',e:'⚖️'},
+  {n:'工程師節',d:'2026-06-06',c:'職業節日',e:'⚙️'},
+  {n:'水利節',d:'2026-06-06',c:'職業節日',e:'💧'},
+  {n:'司法節',d:'2026-06-11',c:'職業節日',e:'⚖️'},
+  {n:'警察節',d:'2026-06-15',c:'職業節日',e:'👮'},
+  {n:'漁民節',d:'2026-07-01',c:'職業節日',e:'🎣'},
+  {n:'陸軍節',d:'2026-07-07',c:'職業節日',e:'🪖'},
+  {n:'合作節',d:'2026-07-04',c:'職業節日',e:'🤝'},
+  {n:'空軍節',d:'2026-08-14',c:'職業節日',e:'✈️'},
+  {n:'海軍節',d:'2026-09-02',c:'職業節日',e:'⚓'},
+  {n:'記者節',d:'2026-09-01',c:'職業節日',e:'📰'},
+  {n:'軍人節',d:'2026-09-03',c:'職業節日',e:'🎖️'},
+  {n:'藥師節',d:'2026-09-09',c:'職業節日',e:'💊'},
+  {n:'國民體育日',d:'2026-09-09',c:'職業節日',e:'🏃'},
+  {n:'會計師節',d:'2026-09-09',c:'職業節日',e:'📊'},
+  {n:'地政士節',d:'2026-09-15',c:'職業節日',e:'🏠'},
+  {n:'統計節',d:'2026-10-17',c:'職業節日',e:'📈'},
+  {n:'廚師節',d:'2026-10-20',c:'職業節日',e:'👨‍🍳'},
+  {n:'清潔隊員節',d:'2026-10-25',c:'職業節日',e:'♻️'},
+  {n:'職能治療師節',d:'2026-10-27',c:'職業節日',e:'🙌'},
+  {n:'工殤日',d:'2026-10-28',c:'職業節日',e:'🦺'},
+  {n:'榮民節',d:'2026-10-31',c:'職業節日',e:'🎗️'},
+  {n:'商人節',d:'2026-11-01',c:'職業節日',e:'💼'},
+  {n:'礦業節',d:'2026-11-01',c:'職業節日',e:'⛏️'},
+  {n:'牙醫師節',d:'2026-11-04',c:'職業節日',e:'🦷'},
+  {n:'文藝節',d:'2026-11-04',c:'職業節日',e:'🎨'},
+  {n:'舞蹈節',d:'2026-11-05',c:'職業節日',e:'💃'},
+  {n:'言論自由日',d:'2026-11-07',c:'職業節日',e:'🗣️'},
+  {n:'衛生節',d:'2026-11-07',c:'職業節日',e:'🧼'},
+  {n:'海巡節',d:'2026-11-08',c:'職業節日',e:'🚢'},
+  {n:'工業節',d:'2026-11-11',c:'職業節日',e:'🏭'},
+  {n:'地政節',d:'2026-11-11',c:'職業節日',e:'📐'},
+  {n:'醫師節',d:'2026-11-12',c:'職業節日',e:'🩺'},
+  {n:'防空節',d:'2026-11-21',c:'職業節日',e:'🛡️'},
+  {n:'建築師節',d:'2026-11-27',c:'職業節日',e:'🏗️'},
+  {n:'電信節',d:'2026-11-28',c:'職業節日',e:'📡'},
+  {n:'憲兵節',d:'2026-12-12',c:'職業節日',e:'🪖'},
+  // 紀念日
+  {n:'婦女節',d:'2026-03-08',c:'紀念日',e:'♀️'},
+  {n:'植樹節',d:'2026-03-12',c:'紀念日',e:'🌱'},
+  {n:'青年節',d:'2026-03-29',c:'紀念日',e:'🌟'},
+  {n:'革命先烈紀念日',d:'2026-03-29',c:'紀念日',e:'🌹'},
+  {n:'解嚴紀念日',d:'2026-07-15',c:'紀念日',e:'📜'},
+  {n:'孔子誕辰紀念日',d:'2026-09-28',c:'紀念日',e:'📚'},
+  {n:'中華文化復興節',d:'2026-11-12',c:'紀念日',e:'🏮'},
+  {n:'國父誕辰紀念日',d:'2026-11-12',c:'紀念日',e:'🌐'},
+  {n:'身心障礙者日',d:'2026-12-03',c:'紀念日',e:'♿'},
+  {n:'人權日',d:'2026-12-10',c:'紀念日',e:'✊'},
+  {n:'移民日',d:'2026-12-18',c:'紀念日',e:'🌏'},
+  // 國際節日
+  {n:'世界癌症日',d:'2026-02-04',c:'國際節日',e:'🎗️'},
+  {n:'國際婦女節',d:'2026-03-08',c:'國際節日',e:'💪'},
+  {n:'世界水日',d:'2026-03-22',c:'國際節日',e:'💧'},
+  {n:'世界氣象日',d:'2026-03-23',c:'國際節日',e:'🌤️'},
+  {n:'世界衛生日',d:'2026-04-07',c:'國際節日',e:'🏥'},
+  {n:'世界地球日',d:'2026-04-22',c:'國際節日',e:'🌍'},
+  {n:'世界讀書日',d:'2026-04-23',c:'國際節日',e:'📖'},
+  {n:'世界無菸日',d:'2026-05-31',c:'國際節日',e:'🚭'},
+  {n:'國際兒童節',d:'2026-06-01',c:'國際節日',e:'🧒'},
+  {n:'世界環境日',d:'2026-06-05',c:'國際節日',e:'🌱'},
+  {n:'世界海洋日',d:'2026-06-08',c:'國際節日',e:'🌊'},
+  {n:'世界人口日',d:'2026-07-11',c:'國際節日',e:'🌏'},
+  {n:'世界動物日',d:'2026-10-04',c:'國際節日',e:'🐾'},
+  {n:'世界心理健康日',d:'2026-10-10',c:'國際節日',e:'🧠'},
+  {n:'世界糧食日',d:'2026-10-16',c:'國際節日',e:'🌾'},
+  {n:'國際老人節',d:'2026-10-01',c:'國際節日',e:'👴'},
+  {n:'世界教師節',d:'2026-10-05',c:'國際節日',e:'🍎'},
+  {n:'國際和平日',d:'2026-09-21',c:'國際節日',e:'☮️'},
+  {n:'世界糖尿病日',d:'2026-11-14',c:'國際節日',e:'💙'},
+  {n:'世界愛滋病日',d:'2026-12-01',c:'國際節日',e:'🎗️'},
+  {n:'國際殘疾人日',d:'2026-12-03',c:'國際節日',e:'♿'},
+];
 
-if start_idx != -1 and end_idx != -1:
-    new_content = content[:start_idx] + new_holidays + content[end_idx:]
-    open('/mnt/user-data/outputs/wish_generator.html', 'w').write(new_content)
-    import re
-    names = re.findall(r"name:'([^']+)'", new_content)
-    print(f"done - 節日總數: {len(names)}")
-else:
-    print(f"找不到區塊 start={start_idx} end={end_idx}")
-PYEOF
-Output
-start:10309 end:16136
+// date map
+var dm={};
+H.forEach(function(h){if(!dm[h.d])dm[h.d]=[];dm[h.d].push(h);});
+
+// state
+var now=new Date(),cy=now.getFullYear(),cm=now.getMonth();
+var sel=null,tone='輕鬆',locked={},res=[],busy=false;
+var MODELS=['google/gemini-3.5-flash','mistralai/mistral-small-2603','qwen/qwen3.6-flash','z-ai/glm-5.2'];
+var DOW=['日','一','二','三','四','五','六'];
+var MN=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+
+function pad(n){return n<10?'0'+n:''+n;}
+
+function renderCal(){
+  document.getElementById('calTitle').textContent=cy+'年 '+MN[cm];
+  var g=document.getElementById('calGrid');g.innerHTML='';
+  DOW.forEach(function(d){var e=document.createElement('div');e.className='cal-dow';e.textContent=d;g.appendChild(e);});
+  var first=new Date(cy,cm,1).getDay(),days=new Date(cy,cm+1,0).getDate();
+  var ty=now.getFullYear(),tm=now.getMonth(),td=now.getDate();
+  for(var i=0;i<first;i++){var e=document.createElement('div');e.className='cal-day empty';g.appendChild(e);}
+  for(var d=1;d<=days;d++){
+    var e=document.createElement('div');e.className='cal-day';
+    var ds=cy+'-'+pad(cm+1)+'-'+pad(d);
+    if(ty===cy&&tm===cm&&td===d)e.classList.add('today');
+    if(dm[ds]){e.classList.add('has-h');var dot=document.createElement('span');dot.className='dot';e.appendChild(dot);}
+    var num=document.createElement('span');num.textContent=d;e.appendChild(num);
+    e.setAttribute('data-date',ds);
+    e.addEventListener('click',function(){onDay(this.getAttribute('data-date'));});
+    g.appendChild(e);
+  }
+}
+
+function onDay(ds){
+  document.querySelectorAll('.cal-day').forEach(function(e){e.classList.remove('sel');});
+  var el=document.querySelector('[data-date="'+ds+'"]');
+  if(el)el.classList.add('sel');
+  var pop=document.getElementById('popup'),hs=dm[ds];
+  if(!hs){pop.innerHTML='<span style="color:var(--ink-f)">'+ds.replace(/-/g,'/')+'&nbsp;&nbsp;今天沒有特別節日</span>';}
+  else{pop.innerHTML=hs.map(function(h){return '<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;">'+h.e+' <span class="hday">'+h.n+'</span><span style="font-size:11px;color:var(--ink-f);margin-left:4px;">'+h.c+'</span><button class="use-btn" onclick="pickH(\''+ea(h.n)+'\',\''+h.d+'\',\''+ea(h.e)+'\')">使用</button></div>';}).join('');}
+}
+
+function chM(dir){
+  cm+=dir;
+  if(cm>11){cm=0;cy++;}if(cm<0){cm=11;cy--;}
+  renderCal();
+  document.getElementById('popup').textContent='點選日期查看節日';
+}
+
+function ea(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function renderList(list){
+  var el=document.getElementById('hlist');
+  if(!list.length){el.innerHTML='<div style="font-size:12px;color:var(--ink-f);padding:8px 10px;">找不到符合的節日</div>';return;}
+  el.innerHTML=list.map(function(h){
+    var s=sel&&sel.n===h.n?' sel':'';
+    return '<div class="hitem'+s+'" onclick="pickH(\''+ea(h.n)+'\',\''+h.d+'\',\''+ea(h.e)+'\')">'+h.e+' '+h.n+'<div class="hitem-sub">'+h.c+' · '+h.d.replace(/-/g,'/')+'</div></div>';
+  }).join('');
+}
+
+function filterH(){
+  var q=document.getElementById('q').value.trim().toLowerCase();
+  renderList(q?H.filter(function(h){return h.n.toLowerCase().includes(q)||h.c.toLowerCase().includes(q);}):H);
+}
+
+function pickH(name,date,emoji){
+  sel={n:name,d:date,e:emoji};
+  document.getElementById('sname').textContent=emoji+' '+name;
+  document.getElementById('sdate').textContent=date.replace(/-/g,'/');
+  filterH();
+  document.getElementById('res').innerHTML='<div class="empty"><div class="ei">'+emoji+'</div><p>已選擇「'+name+'」<br>按下方按鈕產生祝福</p></div>';
+}
+
+function setT(btn){document.querySelectorAll('.tbtn').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');tone=btn.getAttribute('data-t');}
+
+function buildPrompt(){
+  var rel=document.getElementById('rel').value.trim();
+  var trait=document.getElementById('trait').value.trim();
+  var note=document.getElementById('note').value.trim();
+  var ctx='';
+  if(rel)ctx+='與對方關係：'+rel+'\n';
+  if(trait)ctx+='對方個性或興趣：'+trait+'\n';
+  if(note)ctx+='其他備註：'+note+'\n';
+  var hn=sel?sel.n:'節日';
+  return '你是一個幫人寫節日祝福的助手。現在要寫的節日是「'+hn+'」。請產生5則祝福訊息。\n\n語氣要求：'+tone+'\n注意事項：\n- 不要太制式、不要像範本套用\n- 不要裝熟，保持一點點禮貌距離，像是傳給不太熟的朋友那種感覺\n- 不要用「願你」「祝你」這種起頭\n- 標點符號全部用空格代替，可以適時加入合適的emoji\n- 每則約2-4行，長短自然不一\n- 5則風格明顯不同\n- 請讓祝福內容符合「'+hn+'」的節日氛圍與意義\n'+(ctx?'\n對象背景：\n'+ctx+'\n請讓祝福更貼合這個人':'')+'\n\n請直接回傳JSON，不加說明文字或markdown：\n{"wishes":["第一則","第二則","第三則","第四則","第五則"]}';
+}
+
+function getText(r){
+  if(typeof r==='string')return r;
+  if(r&&r.message&&r.message.content)return r.message.content;
+  if(r&&r.content)return r.content;
+  if(r&&r.text)return r.text;
+  return JSON.stringify(r);
+}
+
+async function tryM(m,p){
+  var r=await puter.ai.chat(p,{model:m});
+  var t=getText(r);
+  var c=t.replace(/```json|```/g,'').trim();
+  var match=c.match(/\{[\s\S]*\}/);
+  if(!match)throw new Error('格式錯誤');
+  return JSON.parse(match[0]);
+}
+
+async function gen(){
+  if(busy)return;
+  if(!sel){alert('請先選擇節日');return;}
+  busy=true;
+  var btn=document.getElementById('gbtn');
+  btn.disabled=true;btn.textContent='生 成 中 …';
+  var resEl=document.getElementById('res');
+  var lt={};
+  res.forEach(function(r,i){if(locked[i])lt[i]=r;});
+  var html='';
+  for(var i=0;i<5;i++)html+=lt[i]!==undefined?mkCard(i,lt[i],true):'<div class="lcard">正在生成版本 '+(i+1)+' …</div>';
+  resEl.innerHTML=html;
+  var parsed=null,lastErr='',p=buildPrompt();
+  for(var m=0;m<MODELS.length;m++){try{parsed=await tryM(MODELS[m],p);break;}catch(e){lastErr=MODELS[m]+': '+e.message;}}
+  if(parsed){
+    res=parsed.wishes;locked={};
+    Object.keys(lt).forEach(function(i){res[i]=lt[i];locked[i]=true;});
+    renderCards();
+  }else{
+    resEl.innerHTML='<div class="errmsg">出了點問題\n'+esc(lastErr)+'</div>';
+  }
+  busy=false;btn.disabled=false;btn.textContent='產 生 五 個 版 本';
+}
+
+function mkCard(i,text,lk){
+  return '<div class="wcard'+(lk?' lk':'')+'"><div class="ctop"><span class="cnum">NO. 0'+(i+1)+'</span><div class="cacts">'+(lk?'<span class="ltag">已鎖定</span>':'')+'<button class="abtn'+(lk?' lo':'')+'" onclick="toggleLk('+i+')">'+(lk?'解鎖':'鎖定')+'</button><button class="abtn" id="cp'+i+'" onclick="cpText('+i+')">複製</button></div></div><div class="div"></div><div class="ctext">'+esc(text)+'</div></div>';
+}
+
+function renderCards(){document.getElementById('res').innerHTML=res.map(function(t,i){return mkCard(i,t,!!locked[i]);}).join('');}
+function toggleLk(i){if(locked[i])delete locked[i];else locked[i]=true;renderCards();}
+async function cpText(i){
+  try{
+    await navigator.clipboard.writeText(res[i]);
+    var b=document.getElementById('cp'+i);b.classList.add('cp');b.textContent='已複製';
+    setTimeout(function(){b.classList.remove('cp');b.textContent='複製';},1800);
+  }catch(e){}
+}
+
+renderCal();
+renderList(H);
+</script>
+</body>
+</html>
